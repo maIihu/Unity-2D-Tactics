@@ -44,12 +44,12 @@ public class ColliderInputHandler : MonoBehaviour, IInputHandler
     private void HandleCharacter(Collider2D col)
     {
         CharacterBase character = col.GetComponent<CharacterBase>();
-        
+        CharacterManager.Instance.characterTurned.HandleClickToEnemyCharacter(character);
     }
 
     private void HandleOverlayNode(Collider2D col)
     {
         GridNode gridNode = col.GetComponent<GridNode>();
-        CharacterManager.Instance.characterTurned.HandleClick(gridNode);
+        CharacterManager.Instance.characterTurned.HandleClickToGridNode(gridNode);
     }
 }

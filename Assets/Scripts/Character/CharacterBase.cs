@@ -5,22 +5,25 @@ using UnityEngine;
 
 public class CharacterBase : MonoBehaviour
 {
-    public CharacterData data;
-    public List<GridNode> MovableNodes { get; set; }
-    public List<GridNode> UnwalableNodes;
-    public List<GridNode> AttackAbleTiles { get; set; }
-    public List<GridNode> IntendedPath { get; set; }
-    public GridNode currentNode;
+    private List<GridNode> _movableNodes;
+    private List<GridNode> _unwalkableNodes;
+    private List<GridNode> _intendedPath;
 
+    private List<CharacterBase> _enemyInRange;
+    
     private PathFinding _pathFinding;
     private GameObject _ghostInstance;
     
+    public CharacterData data;
+    public GridNode currentNode;
+    
     private void Awake()
     {
-        MovableNodes = new List<GridNode>();
-        UnwalableNodes = new List<GridNode>();
-        AttackAbleTiles = new List<GridNode>();
+        _movableNodes = new List<GridNode>();
+        _unwalkableNodes = new List<GridNode>();
         _pathFinding = new PathFinding();
+        
+        _enemyInRange = new List<CharacterBase>();
     }
 
     public void ActiveTurn()
@@ -31,22 +34,40 @@ public class CharacterBase : MonoBehaviour
         foreach (var gridNode in surroundingGridNode)
         {
             if(!gridNode.occupyingObject)
-                MovableNodes.Add(gridNode);
+                _movableNodes.Add(gridNode);
             else
-                UnwalableNodes.Add(gridNode);
+            {
+                _unwalkableNodes.Add(gridNode);
+                if(gridNode.occupyingObject.TryGetComponent<CharacterBase>(out var otherCharacter) && IsEnemy(otherCharacter))
+                    _enemyInRange.Add(otherCharacter);
+            }
         }
         
-        foreach (var gridNode in MovableNodes) gridNode.ShowMovableGridNode();
-        foreach (var gridNode in UnwalableNodes) gridNode.ShowUnwalkableGridNode();
+        foreach (var gridNode in _movableNodes) gridNode.ShowMovableGridNode();
+        foreach (var gridNode in _unwalkableNodes) gridNode.ShowUnwalkableGridNode();
+        foreach (var character in _enemyInRange)
+        {
+            character.transform.GetChild(0).gameObject.SetActive(true);
+            character.transform.GetChild(0).GetComponent<SpriteRenderer>().color = Color.red;
+        }
     }
 
-    public void HandleClick(GridNode gridNode)
+    public void HandleClickToGridNode(GridNode gridNode)
     {
-        if (MovableNodes.Contains(gridNode))
+        if (_movableNodes.Contains(gridNode))
         {
-            IntendedPath = _pathFinding.FindPath(currentNode, gridNode);
+            _intendedPath = _pathFinding.FindPath(currentNode, gridNode);
             SpawnGhostInTarget(gridNode);
-            DrawArrowPath.Instance.DrawPath(IntendedPath, currentNode);
+            DrawArrowPath.Instance.DrawPath(_intendedPath, currentNode);
+        }
+    }
+
+    public void HandleClickToEnemyCharacter(CharacterBase enemy)
+    {
+        if (_enemyInRange.Contains(enemy))
+        {
+            _intendedPath = _pathFinding.FindPath(currentNode, enemy.currentNode);
+            
         }
     }
     
@@ -84,7 +105,7 @@ public class CharacterBase : MonoBehaviour
     {
         ResetGhost();
         currentNode.occupyingObject = null;
-        foreach (GridNode tile in IntendedPath)
+        foreach (GridNode tile in _intendedPath)
         {
             Vector3 targetPosition = new Vector3(tile.GridLocation.x, tile.GridLocation.y, 0);
             while (Vector3.Distance(transform.localPosition, targetPosition) > 0.1f)
@@ -101,12 +122,19 @@ public class CharacterBase : MonoBehaviour
 
     private void RemovePath()
     {
-        foreach (var gridNode in MovableNodes) gridNode.HideGridNode();
-        foreach (var gridNode in UnwalableNodes) gridNode.HideGridNode();
+        foreach (var gridNode in _movableNodes) gridNode.HideGridNode();
+        foreach (var gridNode in _unwalkableNodes) gridNode.HideGridNode();
+        foreach (var character in _enemyInRange)
+        {
+            character.transform.GetChild(0).gameObject.SetActive(false);
+            character.transform.GetChild(0).GetComponent<SpriteRenderer>().color = Color.white;
+        }
         
-        MovableNodes.Clear();
-        UnwalableNodes.Clear();
-        IntendedPath.Clear();
+        _movableNodes.Clear();
+        _unwalkableNodes.Clear();
+        _intendedPath.Clear();
+        _enemyInRange.Clear();
+        
         DrawArrowPath.Instance.DeletePath();
     }
 
@@ -114,4 +142,5 @@ public class CharacterBase : MonoBehaviour
     {
         return data.team != otherCharacter.data.team;
     }
+    
 }
