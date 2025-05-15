@@ -13,4 +13,6 @@ public class CharacterData : ScriptableObject
     public string characterName;
     public CharacterTeam team;
     public int speed;
+    public int moveRange;
+    public int attackRange;
 }

@@ -76,7 +76,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1237115985
-  m_SortingLayer: 3
+  m_SortingLayer: 4
   m_SortingOrder: 0
   m_Sprite: {fileID: 1487422154, guid: 0dac540381e9d194ebbea3ff433ea963, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -173,7 +173,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
-    oldSize: {x: 0.875, y: 1.0625}
+    oldSize: {x: 0.7, y: 0.85}
     newSize: {x: 0.875, y: 1.0625}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -194,7 +194,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0f413da94ddd2854e9a4d906c11c9617, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  data: {fileID: 11400000, guid: ddae89305d3608d44b5cc6f102f9de8b, type: 2}
+  characterData: {fileID: 11400000, guid: ddae89305d3608d44b5cc6f102f9de8b, type: 2}
   currentNode: {fileID: 0}
 --- !u!1 &4576971413156196764
 GameObject:
@@ -267,7 +267,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -920345345
-  m_SortingLayer: 4
+  m_SortingLayer: 5
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: e76cd45d7310cab4b89165be236f167e, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}

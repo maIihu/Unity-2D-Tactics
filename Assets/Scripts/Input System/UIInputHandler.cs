@@ -9,7 +9,7 @@ public class UIInputHandler : MonoBehaviour, IInputHandler
     {
         if (input is UIInputData uiInput)
         {
-            Debug.Log($"UI Button clicked: {uiInput.ElementName}");
+            //Debug.Log($"UI Button clicked: {uiInput.ElementName}");
             if (uiInput.ElementName == "ButtonStandby")
             {
                 StartCoroutine(ClickToButtonStandby());

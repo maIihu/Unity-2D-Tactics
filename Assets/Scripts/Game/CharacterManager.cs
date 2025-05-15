@@ -80,7 +80,7 @@ public class CharacterManager : MonoBehaviour
         characterList.AddRange(BluePlayer.ActiveCharacters);
         characterList.AddRange(RedPlayer.ActiveCharacters);
         
-        characterList = characterList.OrderByDescending(x => x.data.speed).ToList();
+        characterList = characterList.OrderByDescending(x => x.characterData.speed).ToList();
 
         int i = 0;
         foreach (var character in characterList)

@@ -30,6 +30,6 @@ public class TurnManager : MonoBehaviour
     
     public bool IsMyTurn(CharacterBase character)
     {
-        return ActivePlayer.Team == character.data.team;
+        return ActivePlayer.Team == character.characterData.team;
     }
 }

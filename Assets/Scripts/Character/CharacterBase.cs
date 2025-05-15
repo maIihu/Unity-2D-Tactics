@@ -1,11 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class CharacterBase : MonoBehaviour
 {
     private List<GridNode> _movableNodes;
+    private List<GridNode> _attackAbleNodes;
     private List<GridNode> _unwalkableNodes;
     private List<GridNode> _intendedPath;
 
@@ -14,12 +17,13 @@ public class CharacterBase : MonoBehaviour
     private PathFinding _pathFinding;
     private GameObject _ghostInstance;
     
-    public CharacterData data;
+    public CharacterData characterData;
     public GridNode currentNode;
     
     private void Awake()
     {
         _movableNodes = new List<GridNode>();
+        _attackAbleNodes = new List<GridNode>();
         _unwalkableNodes = new List<GridNode>();
         _pathFinding = new PathFinding();
         
@@ -28,21 +32,32 @@ public class CharacterBase : MonoBehaviour
 
     public void ActiveTurn()
     {
-        Debug.Log(gameObject.name + " TURN");
+        //Debug.Log(gameObject.name + " TURN");
         transform.GetChild(0).gameObject.SetActive(true);
-        List<GridNode> surroundingGridNode = MapManager.Instance.GetSurroundingGridNode(currentNode, 10);
-        foreach (var gridNode in surroundingGridNode)
+        var surroundingMoveRange = MapManager.Instance.GetSurroundingGridNode(currentNode, characterData.moveRange);
+        var surroundingAttackRange = MapManager.Instance.GetSurroundingGridNode(currentNode, characterData.attackRange + characterData.moveRange);
+        
+        foreach (var gridNode in surroundingMoveRange)
         {
             if(!gridNode.occupyingObject)
                 _movableNodes.Add(gridNode);
             else
-            {
                 _unwalkableNodes.Add(gridNode);
-                if(gridNode.occupyingObject.TryGetComponent<CharacterBase>(out var otherCharacter) && IsEnemy(otherCharacter))
-                    _enemyInRange.Add(otherCharacter);
+        }
+
+        foreach (var gridNode in surroundingAttackRange)
+        {
+            _attackAbleNodes.Add(gridNode);
+            if(gridNode.occupyingObject != null && gridNode.occupyingObject.TryGetComponent<CharacterBase>(out var otherCharacter) && IsEnemy(otherCharacter))
+            {
+                _enemyInRange.Add(otherCharacter);
             }
         }
-        
+        ShowGridNodeInCanAction();
+    }
+    
+    private void ShowGridNodeInCanAction(){
+        foreach (var gridNode in _attackAbleNodes) gridNode.ShowUnwalkableGridNode();
         foreach (var gridNode in _movableNodes) gridNode.ShowMovableGridNode();
         foreach (var gridNode in _unwalkableNodes) gridNode.ShowUnwalkableGridNode();
         foreach (var character in _enemyInRange)
@@ -51,7 +66,7 @@ public class CharacterBase : MonoBehaviour
             character.transform.GetChild(0).GetComponent<SpriteRenderer>().color = Color.red;
         }
     }
-
+    
     public void HandleClickToGridNode(GridNode gridNode)
     {
         if (_movableNodes.Contains(gridNode))
@@ -66,8 +81,21 @@ public class CharacterBase : MonoBehaviour
     {
         if (_enemyInRange.Contains(enemy))
         {
-            _intendedPath = _pathFinding.FindPath(currentNode, enemy.currentNode);
-            
+            // take surrounding node in enemy with attackRange of current character
+            var surroundingNodeInEnemy =
+                MapManager.Instance.GetSurroundingGridNode(enemy.currentNode, characterData.attackRange);
+            List<List<GridNode>> pathsCanMove = new List<List<GridNode>>();
+            foreach (var gridNode in surroundingNodeInEnemy)
+            {
+                var path = _pathFinding.FindPath(currentNode, gridNode);
+                if (path.Count > 0)
+                {
+                    pathsCanMove.Add(path);
+                }
+            }
+            _intendedPath = pathsCanMove.OrderBy(p => p.Count).FirstOrDefault();
+            SpawnGhostInTarget(_intendedPath[_intendedPath.Count - 1]);
+            DrawArrowPath.Instance.DrawPath(_intendedPath, currentNode);
         }
     }
     
@@ -124,6 +152,7 @@ public class CharacterBase : MonoBehaviour
     {
         foreach (var gridNode in _movableNodes) gridNode.HideGridNode();
         foreach (var gridNode in _unwalkableNodes) gridNode.HideGridNode();
+        foreach (var gridNode in _attackAbleNodes)gridNode.HideGridNode();
         foreach (var character in _enemyInRange)
         {
             character.transform.GetChild(0).gameObject.SetActive(false);
@@ -134,13 +163,14 @@ public class CharacterBase : MonoBehaviour
         _unwalkableNodes.Clear();
         _intendedPath.Clear();
         _enemyInRange.Clear();
+        _attackAbleNodes.Clear();
         
         DrawArrowPath.Instance.DeletePath();
     }
 
     public bool IsEnemy(CharacterBase otherCharacter)
     {
-        return data.team != otherCharacter.data.team;
+        return characterData.team != otherCharacter.characterData.team;
     }
     
 }
