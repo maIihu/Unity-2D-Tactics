@@ -15,5 +15,5 @@ MonoBehaviour:
   characterName: Red Knight
   team: 1
   speed: 200
-  moveRange: 3
+  moveRange: 8
   attackRange: 1

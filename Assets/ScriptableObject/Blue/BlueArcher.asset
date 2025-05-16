@@ -15,5 +15,5 @@ MonoBehaviour:
   characterName: Blue Archer
   team: 0
   speed: 140
-  moveRange: 3
+  moveRange: 8
   attackRange: 3

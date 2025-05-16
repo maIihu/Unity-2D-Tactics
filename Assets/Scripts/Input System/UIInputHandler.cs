@@ -16,7 +16,7 @@ public class UIInputHandler : MonoBehaviour, IInputHandler
             }
             else if (uiInput.ElementName == "ButtonAttack")
             {
-                ClickToButtonAttack();
+                StartCoroutine(ClickToButtonAttack());
             }
         }
     }
@@ -28,8 +28,10 @@ public class UIInputHandler : MonoBehaviour, IInputHandler
         CharacterManager.Instance.ActiveNewCharacterTurn();
     }
 
-    private void ClickToButtonAttack()
+    private IEnumerator ClickToButtonAttack()
     {
-        
+        yield return StartCoroutine(CharacterManager.Instance.characterTurned.Attack());
+        CharacterManager.Instance.ActiveNewCharacterTurn();
+
     }
 }

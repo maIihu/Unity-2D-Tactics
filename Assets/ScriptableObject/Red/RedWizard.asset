@@ -15,5 +15,5 @@ MonoBehaviour:
   characterName: Red Wizard
   team: 1
   speed: 120
-  moveRange: 3
+  moveRange: 8
   attackRange: 2
