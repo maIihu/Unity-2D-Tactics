@@ -14,6 +14,10 @@ public class UIInputHandler : MonoBehaviour, IInputHandler
             {
                 StartCoroutine(ClickToButtonStandby());
             }
+            else if (uiInput.ElementName == "ButtonAttack")
+            {
+                ClickToButtonAttack();
+            }
         }
     }
 
@@ -22,5 +26,10 @@ public class UIInputHandler : MonoBehaviour, IInputHandler
     {
         yield return StartCoroutine(CharacterManager.Instance.characterTurned.MoveAlongPath());
         CharacterManager.Instance.ActiveNewCharacterTurn();
+    }
+
+    private void ClickToButtonAttack()
+    {
+        
     }
 }

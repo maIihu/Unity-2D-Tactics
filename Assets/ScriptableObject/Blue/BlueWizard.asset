@@ -15,3 +15,5 @@ MonoBehaviour:
   characterName: Blue Wizard
   team: 0
   speed: 120
+  moveRange: 3
+  attackRange: 2
