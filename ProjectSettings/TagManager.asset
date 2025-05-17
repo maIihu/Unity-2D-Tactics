@@ -46,6 +46,9 @@ TagManager:
   - name: Ground
     uniqueID: 3856841315
     locked: 0
+  - name: Rounding
+    uniqueID: 192484653
+    locked: 0
   - name: GridOverlay
     uniqueID: 3528599547
     locked: 0
@@ -57,4 +60,7 @@ TagManager:
     locked: 0
   - name: Arrow
     uniqueID: 3374621951
+    locked: 0
+  - name: Cursor
+    uniqueID: 2609909087
     locked: 0

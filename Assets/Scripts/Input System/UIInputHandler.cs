@@ -32,6 +32,5 @@ public class UIInputHandler : MonoBehaviour, IInputHandler
     {
         yield return StartCoroutine(CharacterManager.Instance.characterTurned.Attack());
         CharacterManager.Instance.ActiveNewCharacterTurn();
-
     }
 }

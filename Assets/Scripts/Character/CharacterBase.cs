@@ -21,6 +21,7 @@ public class CharacterBase : MonoBehaviour
     public GridNode currentNode;
 
     private CharacterBase _targetEnemy;
+    private UIManager _uiManager;
     
     private void Awake()
     {
@@ -30,24 +31,26 @@ public class CharacterBase : MonoBehaviour
         _pathFinding = new PathFinding();
         
         _enemyInRange = new List<CharacterBase>();
+        _uiManager = UIManager.Instance;
     }
 
     public void ActiveTurn()
     {
         //Debug.Log(gameObject.name + " TURN");
         _targetEnemy = null;
+        
         transform.GetChild(0).gameObject.SetActive(true);
         var surroundingMoveRange = MapManager.Instance.GetSurroundingGridNode(currentNode, characterData.moveRange);
         var surroundingAttackRange = MapManager.Instance.GetSurroundingGridNode(currentNode, characterData.attackRange + characterData.moveRange);
         
         foreach (var gridNode in surroundingMoveRange)
         {
-            if(!gridNode.occupyingObject)
+            if (gridNode == currentNode || !gridNode.occupyingObject)
                 _movableNodes.Add(gridNode);
             else
                 _unwalkableNodes.Add(gridNode);
         }
-
+        
         foreach (var gridNode in surroundingAttackRange)
         {
             _attackAbleNodes.Add(gridNode);
@@ -72,6 +75,7 @@ public class CharacterBase : MonoBehaviour
     
     public void HandleClickToGridNode(GridNode gridNode)
     {
+        _uiManager.HideButton(_uiManager.buttonAttack);
         if (_movableNodes.Contains(gridNode))
         {
             _targetEnemy = null;
@@ -98,6 +102,8 @@ public class CharacterBase : MonoBehaviour
             if (_enemyInRange.Contains(enemy))
             {
                 _targetEnemy = enemy;
+                _uiManager.ShowButton(_uiManager.buttonAttack);
+                
                 // take surrounding node in enemy with attackRange of current character
                 var surroundingNodeInEnemy =
                     MapManager.Instance.GetSurroundingGridNode(enemy.currentNode, characterData.attackRange);
@@ -122,20 +128,18 @@ public class CharacterBase : MonoBehaviour
 
     public IEnumerator Attack()
     {
-        if (_targetEnemy == null)
+        if (!_targetEnemy)
         {
             Debug.Log("CAN NOT ATTACK");
             yield break;
         }
         
         if (_intendedPath.Count > 0)
-        {// enemy is out of attack range 
-            StartCoroutine(MoveAlongPath());
-        }
-        // call the attack function in here
-        // or something ...
+            yield return StartCoroutine(MoveAlongPath());
+        
         Debug.Log(name + " ATTACK TO " + _targetEnemy.name);
         _targetEnemy = null;
+        _uiManager.HideButton(_uiManager.buttonAttack);
     }
     
     private void SpawnGhostInTarget(GridNode targetTile)
