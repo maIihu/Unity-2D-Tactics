@@ -18,13 +18,36 @@ public class UIInputHandler : MonoBehaviour, IInputHandler
             {
                 StartCoroutine(ClickToButtonAttack());
             }
+            else if (uiInput.ElementName == "ButtonShow")
+            {
+                UIManager.Instance.ShowPanelInformation();
+            }
+            else if (uiInput.ElementName == "ButtonClosePanelInfor")
+            {
+                UIManager.Instance.HidePanelInformation();
+            }
+            else if (uiInput.ElementName == "ButtonCancelAttack")
+            {
+                ClickToButtonCancelAttack();
+            }
         }
     }
 
+    private void ClickToButtonCancelAttack()
+    {
+        UIManager.Instance.HideButton(UIManager.Instance.buttonCancelAttack);
+        UIManager.Instance.HideButton(UIManager.Instance.buttonAttack);
+        UIManager.Instance.HideAttackInformation();
 
+    }
     private IEnumerator ClickToButtonStandby()
     {
         yield return StartCoroutine(CharacterManager.Instance.characterTurned.MoveAlongPath());
+        UIManager.Instance.HideButton(UIManager.Instance.buttonAttack);
+        UIManager.Instance.HideButton(UIManager.Instance.buttonCancelAttack);
+        UIManager.Instance.HideButton(UIManager.Instance.buttonView);
+        UIManager.Instance.HideAttackInformation();
+
         CharacterManager.Instance.ActiveNewCharacterTurn();
     }
 

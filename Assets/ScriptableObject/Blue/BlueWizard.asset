@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterName: Blue Wizard
   team: 0
+  health: 0
+  damage: 0
   speed: 120
-  moveRange: 8
+  moveRange: 100
   attackRange: 2

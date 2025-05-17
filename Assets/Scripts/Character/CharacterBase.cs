@@ -76,6 +76,8 @@ public class CharacterBase : MonoBehaviour
     public void HandleClickToGridNode(GridNode gridNode)
     {
         _uiManager.HideButton(_uiManager.buttonAttack);
+        _uiManager.HideButton(_uiManager.buttonCancelAttack);
+
         if (_movableNodes.Contains(gridNode))
         {
             _targetEnemy = null;
@@ -87,42 +89,34 @@ public class CharacterBase : MonoBehaviour
 
     public void HandleClickToEnemyCharacter(CharacterBase enemy)
     {
-        // can be add condition here to show button attack 
-        
-        // // if enemy in range attack 
-        // if (surroundingAttackRange.Contains(enemy.currentNode))
-        // {
-        //     // show attack button in here
-        //     // something ....
-        //     _targetEnemy = enemy;
-        // }
-        // else
-        // {
             // if enemy range out attack 
-            if (_enemyInRange.Contains(enemy))
-            {
-                _targetEnemy = enemy;
-                _uiManager.ShowButton(_uiManager.buttonAttack);
-                
-                // take surrounding node in enemy with attackRange of current character
-                var surroundingNodeInEnemy =
-                    MapManager.Instance.GetSurroundingGridNode(enemy.currentNode, characterData.attackRange);
-                List<List<GridNode>> pathsCanMove = new List<List<GridNode>>();
-                foreach (var gridNode in surroundingNodeInEnemy)
-                {
-                    var path = _pathFinding.FindPath(currentNode, gridNode);
-                    if (path.Count > 0)
-                    {
-                        pathsCanMove.Add(path);
-                    }
-                }
-                _intendedPath = pathsCanMove.OrderBy(p => p.Count).FirstOrDefault();
-                if (_intendedPath != null)
-                {
-                    SpawnGhostInTarget(_intendedPath[^1]);
-                    DrawArrowPath.Instance.DrawPath(_intendedPath, currentNode);
-                }
+        if (_enemyInRange.Contains(enemy))
+        {
+            _targetEnemy = enemy;
+            _uiManager.ShowButton(_uiManager.buttonAttack);
+            _uiManager.ShowButton(_uiManager.buttonCancelAttack);
+
+            _uiManager.ChangeAttackInformation(this, enemy);
+            _uiManager.ShowAttackInformation();
             
+            // take surrounding node in enemy with attackRange of current character
+            var surroundingNodeInEnemy =
+                MapManager.Instance.GetSurroundingGridNode(enemy.currentNode, characterData.attackRange);
+            List<List<GridNode>> pathsCanMove = new List<List<GridNode>>();
+            foreach (var gridNode in surroundingNodeInEnemy)
+            {
+                var path = _pathFinding.FindPath(currentNode, gridNode);
+                if (path.Count > 0)
+                {
+                    pathsCanMove.Add(path);
+                }
+            }
+            _intendedPath = pathsCanMove.OrderBy(p => p.Count).FirstOrDefault();
+            if (_intendedPath != null)
+            {
+                SpawnGhostInTarget(_intendedPath[^1]);
+                DrawArrowPath.Instance.DrawPath(_intendedPath, currentNode);
+            }
         }
     }
 

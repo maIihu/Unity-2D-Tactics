@@ -68,7 +68,7 @@ public class CharacterManager : MonoBehaviour
             
             teamCharacter.Add(newCharacter.GetComponent<CharacterBase>());
             newCharacter.GetComponent<CharacterBase>().currentNode = MapManager.Instance.Grids[positionToSpawn[randomPos]];
-            MapManager.Instance.Grids[positionToSpawn[randomPos]].occupyingObject = character;
+            MapManager.Instance.Grids[positionToSpawn[randomPos]].occupyingObject = newCharacter;
             positionToSpawn.RemoveAt(randomPos);
             
         }
