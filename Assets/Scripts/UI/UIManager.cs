@@ -18,6 +18,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] public GameObject buttonCancelAttack;
     [SerializeField] public GameObject panelInformation;
     [SerializeField] public GameObject attackInformation;
+    [SerializeField] private GameObject endGamePanel;
 
     private void Awake()
     {
@@ -32,6 +33,7 @@ public class UIManager : MonoBehaviour
         HideButton(buttonCancelAttack);
         HidePanelInformation();
         HideAttackInformation();
+        endGamePanel.SetActive(false);
     }
 
     public void ShowButton(GameObject button)
@@ -116,6 +118,25 @@ public class UIManager : MonoBehaviour
     {
         RectTransform panel = attackInformation.GetComponent<RectTransform>();
         panel.anchoredPosition = new Vector2(panel.anchoredPosition.x, -500);
+    }
+
+    /// <summary>
+    ///  1 is blue, 2 is red
+    /// </summary>
+    /// <param name="team"></param>
+    public void IsGameEnding(int team) 
+    {
+        endGamePanel.SetActive(true);
+        if (team == 2)
+        {
+            endGamePanel.GetComponent<Image>().color = new Color(255, 0, 0, 0.5f);
+            endGamePanel.transform.Find("Name").GetComponent<TextMeshProUGUI>().text = "RED PLAYER WIN";
+        }
+        else
+        {
+            endGamePanel.GetComponent<Image>().color = new Color(0, 0, 255, 0.5f);
+            endGamePanel.transform.Find("Name").GetComponent<TextMeshProUGUI>().text = "BLUE PLAYER WIN";
+        }
     }
     
 }

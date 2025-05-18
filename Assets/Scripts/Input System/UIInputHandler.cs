@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class UIInputHandler : MonoBehaviour, IInputHandler
 {
@@ -29,6 +30,10 @@ public class UIInputHandler : MonoBehaviour, IInputHandler
             else if (uiInput.ElementName == "ButtonCancelAttack")
             {
                 ClickToButtonCancelAttack();
+            }
+            else if (uiInput.ElementName == "ButtonMenu")
+            {
+                SceneManager.LoadScene("Menu");
             }
         }
     }

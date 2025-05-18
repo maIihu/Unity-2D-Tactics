@@ -99,6 +99,9 @@ public class CharacterManager : MonoBehaviour
         characterTurned.ActiveTurn();
         
         GameObject.FindGameObjectWithTag("MainCamera").GetComponent<CameraController>().MoveToPosition(characterTurned.transform.position);
+
+        if (BluePlayer.ActiveCharacters.Count == 0) UIManager.Instance.IsGameEnding(2);
+        else if (RedPlayer.ActiveCharacters.Count == 0) UIManager.Instance.IsGameEnding(1);
     }
     
     
