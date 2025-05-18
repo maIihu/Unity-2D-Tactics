@@ -16,7 +16,7 @@ public class CharacterManager : MonoBehaviour
     [SerializeField] private GameObject[] blueCharacters;
     [SerializeField] private GameObject[] redCharacters;
 
-    private Dictionary<int, CharacterBase> _charactersTurn;
+    public Dictionary<int, CharacterBase> _charactersInRound;
     public CharacterBase characterTurned;
     
     public ChessPlayer RedPlayer { get; set; }
@@ -29,7 +29,7 @@ public class CharacterManager : MonoBehaviour
         else
             _instance = this;
 
-        _charactersTurn = new Dictionary<int, CharacterBase>();
+        _charactersInRound = new Dictionary<int, CharacterBase>();
     }
     
     private void Start()
@@ -84,18 +84,18 @@ public class CharacterManager : MonoBehaviour
 
         int i = 0;
         foreach (var character in characterList)
-            _charactersTurn.Add(i++, character);
+            _charactersInRound.Add(i++, character);
     }
 
     public void ActiveNewCharacterTurn()
     {
-        if(_charactersTurn.Count <= 0)
+        if(_charactersInRound.Count <= 0)
             StartNewRound();
         
-        int firstKey = _charactersTurn.Keys.First();
-        characterTurned = _charactersTurn[firstKey];
+        int firstKey = _charactersInRound.Keys.First();
+        characterTurned = _charactersInRound[firstKey];
     
-        _charactersTurn.Remove(firstKey);
+        _charactersInRound.Remove(firstKey);
         characterTurned.ActiveTurn();
         
         GameObject.FindGameObjectWithTag("MainCamera").GetComponent<CameraController>().MoveToPosition(characterTurned.transform.position);

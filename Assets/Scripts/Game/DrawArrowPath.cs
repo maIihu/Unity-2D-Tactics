@@ -36,9 +36,8 @@ public class DrawArrowPath : MonoBehaviour
 
         for (int i = 0; i < path.Count - 1; i++)
         {
-            GameObject newArrow = Instantiate(arrowPrefab);
-
-            // Xoay mũi tên theo hướng di chuyển
+            GameObject newArrow = Instantiate(arrowPrefab, transform.Find("Path Draw"));
+            
             Vector2 dir = path[i + 1].GridLocation - path[i].GridLocation;
             float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
             newArrow.transform.rotation = Quaternion.Euler(0f, 0f, angle);

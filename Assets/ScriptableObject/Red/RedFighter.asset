@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterName: Red Fighter
   team: 1
+  health: 100
+  damage: 10
   speed: 190
   moveRange: 8
   attackRange: 1

@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterName: Red Thief
   team: 1
+  health: 80
+  damage: 10
   speed: 160
   moveRange: 8
   attackRange: 1

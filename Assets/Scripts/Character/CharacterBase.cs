@@ -28,6 +28,8 @@ public class CharacterBase : MonoBehaviour
         _movableNodes = new List<GridNode>();
         _attackAbleNodes = new List<GridNode>();
         _unwalkableNodes = new List<GridNode>();
+        _intendedPath = new List<GridNode>();
+        
         _pathFinding = new PathFinding();
         
         _enemyInRange = new List<CharacterBase>();
@@ -77,20 +79,26 @@ public class CharacterBase : MonoBehaviour
     {
         _uiManager.HideButton(_uiManager.buttonAttack);
         _uiManager.HideButton(_uiManager.buttonCancelAttack);
+        
+        _targetEnemy = null;
+
+        if (gridNode == currentNode)
+        {
+            RemoveGhost();
+            DrawArrowPath.Instance.DeletePath();
+            return;
+        }
 
         if (_movableNodes.Contains(gridNode))
         {
-            _targetEnemy = null;
             _intendedPath = _pathFinding.FindPath(currentNode, gridNode);
-            SpawnGhostInTarget(gridNode);
-            DrawArrowPath.Instance.DrawPath(_intendedPath, currentNode);
+            if (_intendedPath is { Count: > 0 }) SetIntendedPath(_intendedPath[^1]);
         }
     }
 
     public void HandleClickToEnemyCharacter(CharacterBase enemy)
     {
-            // if enemy range out attack 
-        if (_enemyInRange.Contains(enemy))
+        if (_enemyInRange.Contains(enemy))  // enemy is range out attack 
         {
             _targetEnemy = enemy;
             _uiManager.ShowButton(_uiManager.buttonAttack);
@@ -105,53 +113,66 @@ public class CharacterBase : MonoBehaviour
             List<List<GridNode>> pathsCanMove = new List<List<GridNode>>();
             foreach (var gridNode in surroundingNodeInEnemy)
             {
-                var path = _pathFinding.FindPath(currentNode, gridNode);
-                if (path.Count > 0)
+                if (!gridNode.occupyingObject)
                 {
-                    pathsCanMove.Add(path);
+                    var path = _pathFinding.FindPath(currentNode, gridNode);
+                    if (path.Count > 0)
+                    {
+                        pathsCanMove.Add(path);
+                    }
                 }
             }
             _intendedPath = pathsCanMove.OrderBy(p => p.Count).FirstOrDefault();
-            if (_intendedPath != null)
-            {
-                SpawnGhostInTarget(_intendedPath[^1]);
-                DrawArrowPath.Instance.DrawPath(_intendedPath, currentNode);
-            }
+            if (_intendedPath is { Count: > 0 }) SetIntendedPath(_intendedPath[^1]);
         }
     }
 
     public IEnumerator Attack()
     {
-        if (!_targetEnemy)
+        if (_targetEnemy == null || _targetEnemy.Equals(null))
         {
-            Debug.Log("CAN NOT ATTACK");
+            Debug.Log("Enemy is already dead or destroyed");
             yield break;
         }
+        if (_intendedPath.Count > 0) yield return StartCoroutine(MoveAlongPath());
         
-        if (_intendedPath.Count > 0)
-            yield return StartCoroutine(MoveAlongPath());
-        
+        if (_targetEnemy == null || _targetEnemy.Equals(null))
+        {
+            Debug.Log("Enemy is already dead or destroyed");
+            yield break;
+        }
+
         Debug.Log(name + " ATTACK TO " + _targetEnemy.name);
+        _targetEnemy.TakeDamage(characterData.damage);
         _targetEnemy = null;
         _uiManager.HideButton(_uiManager.buttonAttack);
+        _uiManager.HideButton(_uiManager.buttonCancelAttack);
+        _uiManager.HideAttackInformation();
+    }
+
+    private void SetIntendedPath(GridNode targetNode)
+    {
+        SpawnGhostInCurrentNode();
+        DrawArrowPath.Instance.DrawPath(_intendedPath, currentNode);
+        transform.position = targetNode.transform.position;
     }
     
-    private void SpawnGhostInTarget(GridNode targetTile)
+    private void SpawnGhostInCurrentNode()
     {
-        transform.GetChild(0).gameObject.SetActive(true);
-        ResetGhost();
+        if (_ghostInstance) return;
         _ghostInstance = Instantiate(gameObject);
-        _ghostInstance.transform.position = new Vector3(targetTile.GridLocation.x, targetTile.GridLocation.y, 0);
+        _ghostInstance.transform.position = new Vector3(currentNode.GridLocation.x, currentNode.GridLocation.y, 0);
         _ghostInstance.name = "Ghost_" + name;
-        transform.GetChild(0).gameObject.SetActive(false);
+        _ghostInstance.transform.GetChild(0).gameObject.SetActive(false);
         DestroyImmediate(_ghostInstance.GetComponent<Collider2D>());
         DestroyImmediate(_ghostInstance.GetComponent<CharacterBase>());
+        DestroyImmediate(_ghostInstance.GetComponent<Rigidbody2D>());
         SetGhostAlpha(0.5f);
     }
     
     private void SetGhostAlpha(float alpha)
     {
-        SpriteRenderer sr = transform.GetComponent<SpriteRenderer>();
+        SpriteRenderer sr = _ghostInstance.GetComponent<SpriteRenderer>();
         if (sr != null)
         {
             Color c = sr.color;
@@ -160,15 +181,15 @@ public class CharacterBase : MonoBehaviour
         }
     }
 
-    private void ResetGhost()
+    private void RemoveGhost()
     {
+        transform.position = currentNode.transform.position;
         if (_ghostInstance) Destroy(_ghostInstance);
-        SetGhostAlpha(1f);
     }
     
     public IEnumerator MoveAlongPath()
     {
-        ResetGhost();
+        RemoveGhost();
         currentNode.occupyingObject = null;
         foreach (GridNode tile in _intendedPath)
         {
@@ -192,9 +213,17 @@ public class CharacterBase : MonoBehaviour
         foreach (var gridNode in _attackAbleNodes)gridNode.HideGridNode();
         foreach (var character in _enemyInRange)
         {
-            character.transform.GetChild(0).GetComponent<SpriteRenderer>().color = Color.white;
-            character.transform.GetChild(0).gameObject.SetActive(false);
+            if (character != null && character.transform.childCount > 0)
+            {
+                var child = character.transform.GetChild(0);
+                if (child.TryGetComponent<SpriteRenderer>(out var sr))
+                {
+                    sr.color = Color.white;
+                }
+                child.gameObject.SetActive(false);
+            }
         }
+
         transform.GetChild(0).gameObject.SetActive(false);
         _movableNodes.Clear();
         _unwalkableNodes.Clear();
@@ -209,5 +238,28 @@ public class CharacterBase : MonoBehaviour
     {
         return characterData.team != otherCharacter.characterData.team;
     }
-    
+
+    private void TakeDamage(int damage)
+    {
+        characterData.health -= damage;
+        if (characterData.health <= 0) IsDeath();
+    }
+
+    private void IsDeath()
+    {
+        Debug.Log(name + " DEATH");
+        if (characterData.team == CharacterTeam.Blue)
+            CharacterManager.Instance.BluePlayer.ActiveCharacters.Remove(this);
+        else
+            CharacterManager.Instance.RedPlayer.ActiveCharacters.Remove(this);
+        var entryToRemove = CharacterManager.Instance._charactersInRound
+            .FirstOrDefault(pair => pair.Value == this);
+
+        if (!entryToRemove.Equals(default(KeyValuePair<int, CharacterBase>)))
+            CharacterManager.Instance._charactersInRound.Remove(entryToRemove.Key);
+
+        currentNode.occupyingObject = null;
+        Destroy(gameObject);
+    }
+
 }
